@@ -1,0 +1,133 @@
+---
+description: When a new tool is being added
+alwaysApply: false
+---
+
+# Tool Architecture Rules
+
+## Core Principle
+
+Tools are completely independent modules that can be added or removed without breaking any other part of the codebase. Each tool must be self-contained with no interdependencies.
+
+## When Creating or Modifying Tools
+
+### Tool Constants
+
+- Always define tools in `src/tools/constants.js` in the `TOOLS` object
+- Use lowercase string IDs (e.g., `'brush'`, `'eraser'`, `'blur'`)
+- Format: `TOOL_NAME: 'toolname'`
+
+### Tool Implementation Files
+
+- Create each tool in its own file: `src/tools/{toolName}Tool.js`
+- Export a single function with a descriptive name (e.g., `drawBrushStroke`, `applyBlurEffect`, `floodFillArea`)
+- Tool functions MUST accept a single parameter object with destructured properties
+- Tool functions MUST NOT import or depend on other tool files
+- Tool functions may ONLY import from:
+  - `./utils` (shared utilities)
+  - `./constants` (for CANVAS_WIDTH, CANVAS_HEIGHT, etc.)
+  - Standard JavaScript/React libraries
+- Follow this signature pattern:
+  ```javascript
+  export const toolFunctionName = ({
+    imageData, // Required: ImageData object to modify
+    // ... tool-specific required parameters
+  }) => {
+    if (!imageData) return;
+    // Tool implementation - modify imageData directly
+  };
+  ```
+
+### Tool Icons
+
+- Create icon component: `src/tools/icons/{ToolName}Icon.jsx`
+- Icons must be React functional components
+- Export from `src/tools/icons/index.js`
+- Icons must be self-contained with no dependencies on other tools
+
+### Tool Exports
+
+- Export tool functions from `src/tools/index.js`
+- Export tool icons from `src/tools/index.js`
+- Organize exports by category (Constants, Icons, Utils, Tool functions)
+
+### Tool Registration
+
+- Register tools in `src/components/Toolbar.jsx` in the `tools` array
+- Each entry must include: `id` (from TOOLS constant), `icon` (component), `title` (with optional shortcut)
+
+### Tool Usage in Hooks
+
+- Handle tool logic in hooks (e.g., `useDrawing.js`) using conditional statements
+- Each tool must have its own independent handler function
+- Use `if/else if` or `switch` to route to correct tool handler
+- Tool handlers must be independent - no shared state or logic between tools
+
+### Cursor Utilities
+
+- Add tool-specific cursor classes to `src/tools/utils.js` in `getCursorClass` function
+- Use object map pattern: `{ toolname: 'cursor-toolname' }`
+
+## When Adding a New Tool
+
+Follow these steps in order:
+
+1. Add tool constant to `src/tools/constants.js` TOOLS object
+2. Create tool implementation file `src/tools/{toolName}Tool.js` with exported function
+3. Create tool icon component `src/tools/icons/{ToolName}Icon.jsx`
+4. Export icon from `src/tools/icons/index.js`
+5. Export tool function from `src/tools/index.js`
+6. Add cursor class to `getCursorClass` in `src/tools/utils.js` (if needed)
+7. Register tool in `src/components/Toolbar.jsx` tools array
+8. Add tool handler in `src/hooks/useDrawing.js` (or relevant hook)
+
+## When Removing a Tool
+
+Follow these steps:
+
+1. Remove tool constant from `src/tools/constants.js`
+2. Delete tool implementation file `src/tools/{toolName}Tool.js`
+3. Delete tool icon file `src/tools/icons/{ToolName}Icon.jsx`
+4. Remove icon export from `src/tools/icons/index.js`
+5. Remove tool function export from `src/tools/index.js`
+6. Remove cursor class from `getCursorClass` in `src/tools/utils.js`
+7. Remove tool registration from `src/components/Toolbar.jsx`
+8. Remove tool handler from `src/hooks/useDrawing.js` (or relevant hook)
+
+## Prohibited Patterns - NEVER DO THIS
+
+- Import one tool file into another tool file
+- Create shared state or logic between tools
+- Use tool-specific logic in shared utilities
+- Hard-code tool IDs as strings (always use TOOLS constants)
+- Create circular dependencies between tools
+- Make tools depend on React components or hooks directly
+- Share mutable state between tool implementations
+
+## Required Patterns - ALWAYS DO THIS
+
+- Keep each tool file completely independent
+- Use TOOLS constants for all tool ID references (never hard-code strings)
+- Pass all necessary data as function parameters
+- Keep tool functions pure (no side effects beyond imageData manipulation)
+- Export tool functions with clear, descriptive names
+- Follow the established parameter object pattern
+- Verify tool independence by commenting out registration and handler - app should still work
+
+## Tool Function Signature Standard
+
+All tool functions MUST follow this pattern:
+
+```javascript
+export const toolFunctionName = ({
+  imageData, // Required: ImageData object to modify
+  // ... tool-specific required parameters
+  // ... optional parameters with defaults
+}) => {
+  // Early return if imageData is missing
+  if (!imageData) return;
+
+  // Tool implementation
+  // Modify imageData directly (it's passed by reference)
+};
+```
