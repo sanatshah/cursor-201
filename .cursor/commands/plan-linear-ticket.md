@@ -11,15 +11,17 @@ Analyze a Linear ticket from the current branch name and create a comprehensive 
 
 ### 1. Get Current Branch Name
 
-First, determine the current git branch name:
+First, navigate to the project directory and determine the current git branch name:
 
 ```bash
+cd /Users/sunny/Documents/projects/cursor-201
 git branch --show-current
 ```
 
 Or if that's not available:
 
 ```bash
+cd /Users/sunny/Documents/projects/cursor-201
 git rev-parse --abbrev-ref HEAD
 ```
 
@@ -65,17 +67,6 @@ Analyze the ticket description to understand:
 - **Dependencies:** What other systems/components are involved
 - **User Stories:** Who is the user and what do they need
 - **Acceptance Criteria:** What defines completion
-
-### 5. Explore the Codebase
-
-Based on the ticket description, explore relevant parts of the codebase:
-
-- **Frontend Components:** Search for existing UI components in `app/shared/src/` or `app/web/`
-- **Backend Actions:** Check `app/healthnode/src/actions/` for existing actions
-- **PDOS Actions:** Review `app/pdos/src/storage/data/` for data operations
-- **Database Schema:** Check `app/healthnode/prisma/` for data models
-- **API Routes:** Look at `app/healthnode/src/api/` for existing endpoints
-- **Shared Types:** Review `app/shared-types/src/` for type definitions
 
 ### 6. Create Implementation Plan
 
@@ -255,82 +246,6 @@ Document state management:
 - **Global State:** MobX stores, context, or other global state
 - **Server State:** Cached API responses
 - **State Updates:** When and how state changes
-
-### 6. PDOS Actions Integration
-
-If using PDOS actions, specify:
-
-- **Action Path:** e.g., `actions.user.get`
-- **Storage Key:** How the storage key is generated
-- **Table Instance:** Which storage table is used
-- **Data Caching:** How data is cached and invalidated
-
-## Example Data Flow
-
-Here's an example of a detailed data flow specification:
-
-````markdown
-### User Profile Update Data Flow
-
-#### Step 1: User Submits Form
-
-- **Component:** `app/shared/src/pages/ProfilePage.tsx`
-- **Action:** User fills out profile form and clicks "Save"
-- **Data:** `{ name: string, email: string, phone?: string }`
-
-#### Step 2: Form Validation
-
-- **Component:** `ProfilePage.tsx` (form validation)
-- **Action:** Client-side validation using form library
-- **Data Transformation:** Validates required fields, email format
-- **Error Handling:** Shows validation errors inline
-
-#### Step 3: API Call via PDOS Action
-
-- **Hook:** `usePDOSAction` from `app/cosmos/components/usePDOSActions.ts`
-- **Action Path:** `actions.user.update`
-- **Storage Key:** Generated from `getKey("actions.user.update", [{ id, data }])`
-- **Table Instance:** `pdos().storage("user")`
-- **API Call:** POST to `${gatewayURL}/api/actions` with:
-  ```json
-  {
-    "path": "actions.user.update",
-    "args": [{ "id": "user-123", "data": { "name": "...", "email": "..." } }]
-  }
-  ```
-````
-
-#### Step 4: Backend Action Handler
-
-- **Endpoint:** `app/healthnode/src/api/actions.ts` (POST `/api/actions`)
-- **Handler:** Routes to `app/healthnode/src/actions/user/user.ts` → `user_update`
-- **Validation:** Validates user ID, checks permissions
-- **Business Logic:** Updates user data
-
-#### Step 5: Repository Update
-
-- **Repository:** `app/healthnode/src/db/repository/User.ts`
-- **Method:** `updateById(userId, data)`
-- **Database Operation:** Prisma `user.update()` with `where: { id }` and `data: { ... }`
-- **Data Model:** `User` model from Prisma schema
-
-#### Step 6: Response Processing
-
-- **Response Format:** `{ success: true, data: User }`
-- **Error Handling:** Catches database errors, returns appropriate error response
-- **Data Transformation:** Serializes Prisma model to JSON
-
-#### Step 7: Frontend State Update
-
-- **MobX Store:** `pdos().storage("user").data` automatically updated
-- **Reactive Update:** Components using `usePDOSAction` automatically re-render
-- **UI Update:** Form shows success message, updated data displayed
-
-#### Step 8: User Feedback
-
-- **Component:** `ProfilePage.tsx`
-- **Action:** Shows toast notification "Profile updated successfully"
-- **State:** Form resets or shows updated values
 
 ```
 
