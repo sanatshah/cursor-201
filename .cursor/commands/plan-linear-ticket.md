@@ -56,6 +56,24 @@ This will return:
 - Related issues
 - Any other relevant metadata
 
+### 3.5. Update Ticket Status to "Agent in Progress"
+
+After fetching the ticket, update its status to "Agent in Progress" to indicate that the agent is working on planning the implementation:
+
+**Tool:** `mcp_Linear_update_issue`
+
+- **Parameter:** `id` - The Linear issue identifier (e.g., `LIN-123`)
+- **Parameter:** `state` - Set to `"Agent in Progress"` (the status name)
+
+**Note:** If the status name "Agent in Progress" doesn't exist in your Linear workspace, you may need to:
+- Use the exact status name as it appears in your Linear workspace
+- Or use `mcp_Linear_list_issue_statuses` to find the correct status name/ID for the ticket's team
+- The status can be provided as a name (string) or ID
+
+**Error Handling:**
+- If the status update fails, log a warning but continue with the planning process
+- The planning should proceed even if the status update is unsuccessful
+
 ### 4. Analyze the Ticket Description
 
 Analyze the ticket description to understand:
@@ -70,12 +88,12 @@ Analyze the ticket description to understand:
 
 Based on the ticket description, explore relevant parts of the codebase:
 
-- **Frontend Components:** Search for existing UI components in `app/shared/src/` or `app/web/`
-- **Backend Actions:** Check `app/healthnode/src/actions/` for existing actions
-- **PDOS Actions:** Review `app/pdos/src/storage/data/` for data operations
-- **Database Schema:** Check `app/healthnode/prisma/` for data models
-- **API Routes:** Look at `app/healthnode/src/api/` for existing endpoints
-- **Shared Types:** Review `app/shared-types/src/` for type definitions
+- **Frontend Components:** Search for existing UI components in `/Users/sunny/Documents/projects/cursor-201/app/shared/src/` or `/Users/sunny/Documents/projects/cursor-201/app/web/`
+- **Backend Actions:** Check `/Users/sunny/Documents/projects/cursor-201/app/healthnode/src/actions/` for existing actions
+- **PDOS Actions:** Review `/Users/sunny/Documents/projects/cursor-201/app/pdos/src/storage/data/` for data operations
+- **Database Schema:** Check `/Users/sunny/Documents/projects/cursor-201/app/healthnode/prisma/` for data models
+- **API Routes:** Look at `/Users/sunny/Documents/projects/cursor-201/app/healthnode/src/api/` for existing endpoints
+- **Shared Types:** Review `/Users/sunny/Documents/projects/cursor-201/app/shared-types/src/` for type definitions
 
 ### 6. Create Implementation Plan
 
@@ -274,7 +292,7 @@ Here's an example of a detailed data flow specification:
 
 #### Step 1: User Submits Form
 
-- **Component:** `app/shared/src/pages/ProfilePage.tsx`
+- **Component:** `/Users/sunny/Documents/projects/cursor-201/app/shared/src/pages/ProfilePage.tsx`
 - **Action:** User fills out profile form and clicks "Save"
 - **Data:** `{ name: string, email: string, phone?: string }`
 
@@ -287,7 +305,7 @@ Here's an example of a detailed data flow specification:
 
 #### Step 3: API Call via PDOS Action
 
-- **Hook:** `usePDOSAction` from `app/cosmos/components/usePDOSActions.ts`
+- **Hook:** `usePDOSAction` from `/Users/sunny/Documents/projects/cursor-201/app/cosmos/components/usePDOSActions.ts`
 - **Action Path:** `actions.user.update`
 - **Storage Key:** Generated from `getKey("actions.user.update", [{ id, data }])`
 - **Table Instance:** `pdos().storage("user")`
@@ -302,14 +320,14 @@ Here's an example of a detailed data flow specification:
 
 #### Step 4: Backend Action Handler
 
-- **Endpoint:** `app/healthnode/src/api/actions.ts` (POST `/api/actions`)
-- **Handler:** Routes to `app/healthnode/src/actions/user/user.ts` → `user_update`
+- **Endpoint:** `/Users/sunny/Documents/projects/cursor-201/app/healthnode/src/api/actions.ts` (POST `/api/actions`)
+- **Handler:** Routes to `/Users/sunny/Documents/projects/cursor-201/app/healthnode/src/actions/user/user.ts` → `user_update`
 - **Validation:** Validates user ID, checks permissions
 - **Business Logic:** Updates user data
 
 #### Step 5: Repository Update
 
-- **Repository:** `app/healthnode/src/db/repository/User.ts`
+- **Repository:** `/Users/sunny/Documents/projects/cursor-201/app/healthnode/src/db/repository/User.ts`
 - **Method:** `updateById(userId, data)`
 - **Database Operation:** Prisma `user.update()` with `where: { id }` and `data: { ... }`
 - **Data Model:** `User` model from Prisma schema

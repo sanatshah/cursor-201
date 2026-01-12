@@ -1,11 +1,11 @@
 ---
-description: Plan implementation for a Linear ticket by analyzing its description and creating a detailed implementation plan with data flow
+description: Plan implementation for a Linear ticket by analyzing its description and creating a detailed implementation plan with data flow, then update the ticket description with an overview and status to "In Review"
 globs: **/*
 ---
 
 # Linear Ticket Implementation Planning
 
-Analyze a Linear ticket from the current branch name and create a comprehensive implementation plan with detailed data flow specification.
+Analyze a Linear ticket from the current branch name and create a comprehensive implementation plan with detailed data flow specification, then update the ticket description with an overview of changes and update the ticket status to "In Review".
 
 ## Process
 
@@ -70,12 +70,12 @@ Analyze the ticket description to understand:
 
 Based on the ticket description, explore relevant parts of the codebase:
 
-- **Frontend Components:** Search for existing UI components in `app/shared/src/` or `app/web/`
-- **Backend Actions:** Check `app/healthnode/src/actions/` for existing actions
-- **PDOS Actions:** Review `app/pdos/src/storage/data/` for data operations
-- **Database Schema:** Check `app/healthnode/prisma/` for data models
-- **API Routes:** Look at `app/healthnode/src/api/` for existing endpoints
-- **Shared Types:** Review `app/shared-types/src/` for type definitions
+- **Frontend Components:** Search for existing UI components in `/Users/sunny/Documents/projects/cursor-201/app/shared/src/` or `/Users/sunny/Documents/projects/cursor-201/app/web/`
+- **Backend Actions:** Check `/Users/sunny/Documents/projects/cursor-201/app/healthnode/src/actions/` for existing actions
+- **PDOS Actions:** Review `/Users/sunny/Documents/projects/cursor-201/app/pdos/src/storage/data/` for data operations
+- **Database Schema:** Check `/Users/sunny/Documents/projects/cursor-201/app/healthnode/prisma/` for data models
+- **API Routes:** Look at `/Users/sunny/Documents/projects/cursor-201/app/healthnode/src/api/` for existing endpoints
+- **Shared Types:** Review `/Users/sunny/Documents/projects/cursor-201/app/shared-types/src/` for type definitions
 
 ### 6. Create Implementation Plan
 
@@ -209,6 +209,112 @@ Generate a comprehensive implementation plan with the following structure:
 - [ ] [Question about technical approach]
 ```
 
+### 7. Update Linear Ticket Description with Overview
+
+After creating the implementation plan, update the Linear ticket description to include an overview of the changes:
+
+**Step 7a: Prepare Description Update**
+
+Create a description update that includes:
+
+1. **Original Description:** Preserve the existing ticket description (if any)
+2. **Implementation Overview Section:** Add a new section with:
+   - Brief summary of what will be implemented
+   - Key components/files that will be created or modified
+   - High-level approach or architecture decisions
+   - Any important notes or considerations
+
+**Description Format:**
+
+```markdown
+[Original description content, if any]
+
+---
+
+## Implementation Overview
+
+### Summary
+
+[Brief 2-3 sentence summary of what will be implemented]
+
+### Key Changes
+
+- **New Files:** [List of new files/components to be created]
+- **Modified Files:** [List of existing files to be modified]
+- **Architecture:** [High-level architectural approach]
+
+### Implementation Approach
+
+[Brief description of the implementation strategy, key patterns used, or important technical decisions]
+
+### Notes
+
+[Any important considerations, dependencies, or open questions]
+```
+
+**Step 7b: Update Ticket Description**
+
+Use the Linear MCP tool to update the ticket description:
+
+**Tool:** `mcp_Linear_update_issue`
+
+- **Parameter:** `id` - The Linear issue identifier (e.g., `LIN-123`)
+- **Parameter:** `description` - The updated description in Markdown format
+
+**Important Notes:**
+
+- **Preserve Original Content:** Always include the original description content before adding the new section
+- **Use Markdown:** Linear supports Markdown formatting in descriptions
+- **Separator:** Use a horizontal rule (`---`) to separate original content from the new overview section
+- **Keep It Concise:** The overview should be a summary, not the full implementation plan (which is created separately)
+
+**Error Handling:**
+
+- If the update fails due to permissions, inform the user that they may not have permission to update the ticket description
+- If the description is too long, truncate the overview section while keeping the most important information
+
+### 8. Update Linear Ticket Status to "In Review"
+
+After updating the ticket description, update the Linear ticket status to "In Review":
+
+**Step 8a: Get Team Information**
+
+From the ticket fetched in step 3, extract the team ID or name. The ticket object should contain team information.
+
+**Step 8b: List Available Statuses**
+
+Use the Linear MCP tool to list available issue statuses for the team:
+
+**Tool:** `mcp_Linear_list_issue_statuses`
+
+- **Parameter:** `team` - The team name or ID from the ticket
+
+This will return a list of available statuses for that team.
+
+**Step 8c: Find "In Review" Status**
+
+From the list of statuses, find the status with name "In Review" (or similar variations like "In Review", "Review", "Ready for Review"). Note the status ID or name.
+
+**Step 8d: Update Ticket Status**
+
+Use the Linear MCP tool to update the ticket status:
+
+**Tool:** `mcp_Linear_update_issue`
+
+- **Parameter:** `id` - The Linear issue identifier (e.g., `LIN-123`)
+- **Parameter:** `state` - The status name or ID (e.g., `"In Review"`)
+
+**Note:** The `state` parameter accepts either:
+
+- Status name (e.g., `"In Review"`)
+- Status ID (if you have the exact ID from the status list)
+
+**Error Handling:**
+
+- If "In Review" status doesn't exist, check for similar status names (e.g., "Review", "Ready for Review", "In Review")
+- If no review status exists, inform the user and skip the status update
+- If the update fails due to permissions, inform the user that they may not have permission to update the ticket status
+
 ## Data Flow Specification Guidelines
 
 When specifying data flow, include:
@@ -274,7 +380,7 @@ Here's an example of a detailed data flow specification:
 
 #### Step 1: User Submits Form
 
-- **Component:** `app/shared/src/pages/ProfilePage.tsx`
+- **Component:** `/Users/sunny/Documents/projects/cursor-201/app/shared/src/pages/ProfilePage.tsx`
 - **Action:** User fills out profile form and clicks "Save"
 - **Data:** `{ name: string, email: string, phone?: string }`
 
@@ -287,7 +393,7 @@ Here's an example of a detailed data flow specification:
 
 #### Step 3: API Call via PDOS Action
 
-- **Hook:** `usePDOSAction` from `app/cosmos/components/usePDOSActions.ts`
+- **Hook:** `usePDOSAction` from `/Users/sunny/Documents/projects/cursor-201/app/cosmos/components/usePDOSActions.ts`
 - **Action Path:** `actions.user.update`
 - **Storage Key:** Generated from `getKey("actions.user.update", [{ id, data }])`
 - **Table Instance:** `pdos().storage("user")`
@@ -302,14 +408,14 @@ Here's an example of a detailed data flow specification:
 
 #### Step 4: Backend Action Handler
 
-- **Endpoint:** `app/healthnode/src/api/actions.ts` (POST `/api/actions`)
-- **Handler:** Routes to `app/healthnode/src/actions/user/user.ts` → `user_update`
+- **Endpoint:** `/Users/sunny/Documents/projects/cursor-201/app/healthnode/src/api/actions.ts` (POST `/api/actions`)
+- **Handler:** Routes to `/Users/sunny/Documents/projects/cursor-201/app/healthnode/src/actions/user/user.ts` → `user_update`
 - **Validation:** Validates user ID, checks permissions
 - **Business Logic:** Updates user data
 
 #### Step 5: Repository Update
 
-- **Repository:** `app/healthnode/src/db/repository/User.ts`
+- **Repository:** `/Users/sunny/Documents/projects/cursor-201/app/healthnode/src/db/repository/User.ts`
 - **Method:** `updateById(userId, data)`
 - **Database Operation:** Prisma `user.update()` with `where: { id }` and `data: { ... }`
 - **Data Model:** `User` model from Prisma schema
@@ -369,6 +475,8 @@ If any step fails:
 - **No ticket ID in branch:** Inform user, suggest creating branch with ticket ID
 - **Ticket not found:** Inform user that ticket doesn't exist
 - **Ticket lacks description:** Inform user, suggest adding description to ticket
+- **Description update fails:** Inform user that they may not have permission to update the ticket description, or that the description may be too long
+- **Status update fails:** Inform user that they may not have permission to update the ticket status, or that the status doesn't exist
 
 Always provide clear feedback about what happened and what information is needed to proceed.
 
