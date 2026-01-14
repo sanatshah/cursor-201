@@ -1,0 +1,56 @@
+---
+description: Anytime a new visual element is added or changed
+alwaysApply: false
+---
+
+# Design System Rules
+
+## Components
+
+- Use components from `src/components/` for all UI elements
+- Toolbar, Canvas, PropertiesPanel, and ColorSwatches are the main UI components
+- Import icons from `src/tools/icons/` (BrushIcon, EraserIcon, BlurIcon, FillIcon)
+- Never create custom buttons, inputs, or panels - use the existing component patterns
+
+## Tokens
+
+- Use CSS variables for colors defined in `src/index.css`:
+  - `var(--toolbar-bg)` - Dark background (#1e1e1e)
+  - `var(--toolbar-border)` - Border color (#333)
+  - `var(--button-hover)` - Hover state (#3a3a3a)
+  - `var(--button-active)` - Active state (#4a4a4a)
+  - `var(--accent-color)` - Primary accent (#6366f1)
+- Use spacing scale: 8px (small), 12px (medium), 16px (large), 20px (section gap)
+- Typography:
+  - Labels: 11px, uppercase, letter-spacing 0.5px
+  - Body text: 13px
+  - Icon size: 22px
+
+## Patterns
+
+- Tool buttons: 44x44px, 8px border radius, 8px gap between buttons
+- Action buttons: padding 10px 16px, 6px border radius, 8px gap between buttons
+- Property sections: 20px vertical gap between sections, 8px gap within sections
+- Panels: 16px padding, dark background with borders
+- Color swatches: 28x28px, 4px border radius, 6px gap in grid
+- Toolbar: 60px width, 12px vertical padding, 8px horizontal padding
+- Properties panel: 240px width, 16px padding
+
+## Colors
+
+- Background: #2d2d2d (body), #1e1e1e (panels), #1a1a1a (canvas area)
+- Text: white (primary), #ccc (secondary), #888 (tertiary), #666 (labels)
+- Borders: #333 (primary), #444 (secondary)
+
+## Transitions
+
+- Use `transition: all 0.15s ease` for interactive elements
+- Hover states should use `var(--button-hover)` background
+
+## Files to reference
+
+- `src/index.css` - All CSS variables and global styles
+- `src/App.css` - Component-specific styles and patterns
+- `src/components/Toolbar.jsx` - Tool button implementation
+- `src/components/PropertiesPanel.jsx` - Panel and form patterns
+- `src/components/ColorSwatches.jsx` - Color picker patterns
