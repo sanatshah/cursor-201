@@ -7,6 +7,12 @@ globs: **/*
 
 Analyze a Linear ticket from the current branch name and create a comprehensive implementation plan with detailed data flow specification, then update the ticket description with an overview of changes and update the ticket status to "In Review".
 
+## Workspace Root
+
+All file paths in this document are relative to the workspace root:
+
+**Workspace Root:** `/Users/sunny/Documents/projects/cursor-201`
+
 ## Process
 
 ### 1. Get Current Branch Name

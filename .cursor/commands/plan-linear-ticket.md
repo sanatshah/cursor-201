@@ -7,6 +7,12 @@ globs: **/*
 
 Analyze a Linear ticket from the current branch name and create a comprehensive implementation plan with detailed data flow specification.
 
+## Workspace Root
+
+All file paths in this document are relative to the workspace root:
+
+**Workspace Root:** `/Users/sunny/Documents/projects/cursor-201`
+
 ## Process
 
 ### 1. Get Current Branch Name
@@ -66,11 +72,13 @@ After fetching the ticket, update its status to "Agent in Progress" to indicate 
 - **Parameter:** `state` - Set to `"Agent in Progress"` (the status name)
 
 **Note:** If the status name "Agent in Progress" doesn't exist in your Linear workspace, you may need to:
+
 - Use the exact status name as it appears in your Linear workspace
 - Or use `mcp_Linear_list_issue_statuses` to find the correct status name/ID for the ticket's team
 - The status can be provided as a name (string) or ID
 
 **Error Handling:**
+
 - If the status update fails, log a warning but continue with the planning process
 - The planning should proceed even if the status update is unsuccessful
 
