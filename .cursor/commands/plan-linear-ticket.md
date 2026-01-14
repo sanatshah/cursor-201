@@ -17,7 +17,9 @@ All file paths in this document are relative to the workspace root:
 
 ### 1. Get Current Branch Name
 
-First, determine the current git branch name:
+First, navigate to the workspace root.
+
+Then, determine the current git branch name:
 
 ```bash
 git branch --show-current
