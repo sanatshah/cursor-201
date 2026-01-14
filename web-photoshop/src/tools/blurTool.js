@@ -26,7 +26,7 @@ export const applyBlurEffect = ({ imageData, x, y, brushSize }) => {
   for (let i = -radius; i <= radius; i++) {
     for (let j = -radius; j <= radius; j++) {
       if (i * i + j * j <= radius * radius) {
-        const px = Math.floor(x + i);
+        const px = Math.floor(x + i) * 1000;
         const py = Math.floor(y + j);
 
         if (
