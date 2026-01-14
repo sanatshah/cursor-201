@@ -2,6 +2,18 @@ import { hexToRgb } from './utils'
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from './constants'
 
 /**
+ * Fill tool properties configuration
+ */
+export const fillToolProperties = {
+  brushColor: {
+    type: 'color',
+    label: 'Color',
+    default: '#000000',
+    showSwatches: true
+  }
+}
+
+/**
  * Flood fill algorithm
  */
 export const floodFillArea = ({ imageData, startX, startY, brushColor }) => {

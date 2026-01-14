@@ -2,6 +2,34 @@ import { hexToRgb } from "./utils";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./constants";
 
 /**
+ * Brush tool properties configuration
+ */
+export const brushToolProperties = {
+  brushSize: {
+    type: 'slider',
+    label: 'Brush Size',
+    min: 1,
+    max: 100,
+    default: 20,
+    unit: 'px'
+  },
+  opacity: {
+    type: 'slider',
+    label: 'Opacity',
+    min: 1,
+    max: 100,
+    default: 100,
+    unit: '%'
+  },
+  brushColor: {
+    type: 'color',
+    label: 'Color',
+    default: '#000000',
+    showSwatches: true
+  }
+}
+
+/**
  * Draw brush stroke using Bresenham's line algorithm
  */
 export const drawBrushStroke = ({

@@ -69,12 +69,14 @@ Canvas Re-render
 
 **Step 4: Brush Stroke Application**
 - `drawBrush` calls `drawBrushStroke` from `brushTool.js`
-- Parameters passed:
+- Parameters passed from `toolProperties` object:
   ```javascript
   {
     imageData: imageDataRef.current,
     x, y, prevX, prevY,
-    brushSize, brushColor, opacity,
+    brushSize: toolProperties.brushSize,
+    brushColor: toolProperties.brushColor,
+    opacity: toolProperties.opacity,
     isEraser: false
   }
   ```
@@ -100,7 +102,8 @@ Canvas Re-render
 ```
 Mouse Event (screen coords)
   → Canvas Coordinates (canvas coords)
-  → Tool Parameters (brushSize, color, opacity)
+  → Tool Properties (from toolProperties[activeTool])
+  → Tool Parameters (extracted from toolProperties)
   → ImageData Array (RGBA values)
   → WebGL Texture (GPU memory)
   → Canvas Display (pixels)
@@ -115,7 +118,7 @@ Mouse Event (screen coords)
 - Calls `onGenerateFractal` prop
 
 **Step 2: Handler Execution**
-- `handleGenerateFractal` in `App.jsx`:
+- `handleGenerateFractal` in `App.jsx` (if fractal tool exists):
   ```javascript
   generateFractalBackground({
     imageData: imageDataRef.current,
@@ -158,12 +161,14 @@ Button Click
 **Flow**:
 1. Mouse event → `useDrawing` → `floodFill` function
 2. `floodFill` calls `floodFillArea` from `fillTool.js`
-3. Algorithm:
+3. Parameters passed from `toolProperties`:
+   - `brushColor: toolProperties.brushColor`
+4. Algorithm:
    - Gets target color at click position
    - Uses stack-based flood fill with tolerance
    - Replaces matching pixels with fill color
-4. Modifies ImageData array
-5. Updates texture and canvas
+5. Modifies ImageData array
+6. Updates texture and canvas
 
 **Key Difference**: Fill tool is a one-shot operation (no mouse move handling)
 
@@ -174,12 +179,14 @@ Button Click
 **Flow**:
 1. Mouse events → `useDrawing` → `applyBlur` function
 2. `applyBlur` calls `applyBlurEffect` from `blurTool.js`
-3. Algorithm:
+3. Parameters passed from `toolProperties`:
+   - `brushSize: toolProperties.brushSize`
+4. Algorithm:
    - For each pixel in brush radius
    - Calculates average of surrounding pixels (box blur)
    - Replaces pixel with averaged color
-4. Modifies ImageData array
-5. Updates texture and canvas
+5. Modifies ImageData array
+6. Updates texture and canvas
 
 ## ImageData Structure
 
@@ -235,9 +242,20 @@ imageData[idx + 3] // Alpha channel
 
 - **App Component**:
   - `activeTool` - Selected tool
-  - `brushSize` - Brush size
-  - `brushColor` - Selected color
-  - `opacity` - Opacity level
+  - `toolProperties` - Tool-specific property state object
+    - Structure: `{ [toolName]: { [propertyKey]: value } }`
+    - Each tool maintains its own property values
+    - Properties are preserved when switching between tools
+    - Initialized from `toolPropertiesRegistry` default values
+    - Example structure:
+      ```javascript
+      {
+        brush: { brushSize: 20, opacity: 100, brushColor: '#000000' },
+        eraser: { brushSize: 20, opacity: 100 },
+        blur: { brushSize: 20 },
+        fill: { brushColor: '#000000' }
+      }
+      ```
 
 ### Refs
 
@@ -300,7 +318,8 @@ Re-render with New Props
 
 | Flow Type | Trigger | Handler | Data Modified | Update Method |
 |-----------|---------|---------|--------------|---------------|
-| Tool Selection | Toolbar click | App state | `activeTool` | React re-render |
+| Tool Selection | Toolbar click | App state | `activeTool`, `toolProperties` (preserved) | React re-render |
+| Property Change | PropertiesPanel control | App state | `toolProperties[activeTool][propertyKey]` | React re-render |
 | Brush Drawing | Mouse drag | useDrawing → brushTool | ImageData | WebGL texture |
 | Fractal Generate | Button click | App → fractalTool | ImageData (full) | WebGL texture |
 | Fill | Canvas click | useDrawing → fillTool | ImageData (region) | WebGL texture |

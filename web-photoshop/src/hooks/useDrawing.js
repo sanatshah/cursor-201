@@ -59,11 +59,11 @@ const useDrawing = (canvasRef, imageDataRef, updateTexture) => {
   }, [imageDataRef, updateTexture])
 
   // Mouse down handler
-  const handleMouseDown = useCallback((e, activeTool, brushSize, brushColor, opacity) => {
+  const handleMouseDown = useCallback((e, activeTool, toolProperties) => {
     const coords = getCanvasCoords(e)
 
     if (activeTool === TOOLS.FILL) {
-      floodFill(coords.x, coords.y, brushColor)
+      floodFill(coords.x, coords.y, toolProperties.brushColor)
       return
     }
 
@@ -71,26 +71,60 @@ const useDrawing = (canvasRef, imageDataRef, updateTexture) => {
     lastPosRef.current = coords
 
     if (activeTool === TOOLS.BRUSH) {
-      drawBrush(coords.x, coords.y, coords.x, coords.y, brushSize, brushColor, opacity)
+      drawBrush(
+        coords.x,
+        coords.y,
+        coords.x,
+        coords.y,
+        toolProperties.brushSize,
+        toolProperties.brushColor,
+        toolProperties.opacity
+      )
     } else if (activeTool === TOOLS.ERASER) {
-      drawBrush(coords.x, coords.y, coords.x, coords.y, brushSize, brushColor, opacity, true)
+      drawBrush(
+        coords.x,
+        coords.y,
+        coords.x,
+        coords.y,
+        toolProperties.brushSize,
+        toolProperties.brushColor || '#000000',
+        toolProperties.opacity,
+        true
+      )
     } else if (activeTool === TOOLS.BLUR) {
-      applyBlur(coords.x, coords.y, brushSize)
+      applyBlur(coords.x, coords.y, toolProperties.brushSize)
     }
   }, [getCanvasCoords, drawBrush, applyBlur, floodFill])
 
   // Mouse move handler
-  const handleMouseMove = useCallback((e, activeTool, brushSize, brushColor, opacity) => {
+  const handleMouseMove = useCallback((e, activeTool, toolProperties) => {
     if (!isDrawing) return
 
     const coords = getCanvasCoords(e)
 
     if (activeTool === TOOLS.BRUSH) {
-      drawBrush(coords.x, coords.y, lastPosRef.current.x, lastPosRef.current.y, brushSize, brushColor, opacity)
+      drawBrush(
+        coords.x,
+        coords.y,
+        lastPosRef.current.x,
+        lastPosRef.current.y,
+        toolProperties.brushSize,
+        toolProperties.brushColor,
+        toolProperties.opacity
+      )
     } else if (activeTool === TOOLS.ERASER) {
-      drawBrush(coords.x, coords.y, lastPosRef.current.x, lastPosRef.current.y, brushSize, brushColor, opacity, true)
+      drawBrush(
+        coords.x,
+        coords.y,
+        lastPosRef.current.x,
+        lastPosRef.current.y,
+        toolProperties.brushSize,
+        toolProperties.brushColor || '#000000',
+        toolProperties.opacity,
+        true
+      )
     } else if (activeTool === TOOLS.BLUR) {
-      applyBlur(coords.x, coords.y, brushSize)
+      applyBlur(coords.x, coords.y, toolProperties.brushSize)
     }
 
     lastPosRef.current = coords

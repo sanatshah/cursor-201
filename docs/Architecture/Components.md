@@ -34,30 +34,55 @@ src/
 
 **State Management**:
 - `activeTool` - Currently selected tool
-- `brushSize` - Brush size in pixels
-- `brushColor` - Selected color (hex string)
-- `opacity` - Opacity percentage (0-100)
+- `toolProperties` - Object containing property values for each tool, preserving settings when switching tools
+  - Structure: `{ [toolName]: { [propertyKey]: value } }`
+  - Initialized from `toolPropertiesRegistry` defaults
+  - Example: `{ brush: { brushSize: 20, opacity: 100, brushColor: '#000000' }, blur: { brushSize: 20 } }`
 
 **Hooks Used**:
 - `useWebGL` - WebGL context and texture management
 - `useDrawing` - Drawing event handlers
 
 **Key Functions**:
-- `handleGenerateFractal()` - Generates fractal background pattern
+- `initializeToolProperties()` - Initializes tool property state from registry defaults
+- `handlePropertyChange(propertyKey, value)` - Updates property value for active tool
+- `handleGenerateFractal()` - Generates fractal background pattern (if fractal tool exists)
 
 **Component Structure**:
-```27:37:web-photoshop/src/App.jsx
-  // Fractal generation handler
-  const handleGenerateFractal = () => {
-    if (imageDataRef.current) {
-      generateFractalBackground({
-        imageData: imageDataRef.current,
-        width: CANVAS_WIDTH,
-        height: CANVAS_HEIGHT
-      })
-      updateTexture()
-    }
-  }
+
+Tool properties are initialized from the registry:
+
+```14:28:web-photoshop/src/App.jsx
+  // Initialize tool properties state from registry defaults
+  const initializeToolProperties = () => {
+    const properties = {};
+    Object.entries(toolPropertiesRegistry).forEach(([toolName, toolConfig]) => {
+      properties[toolName] = {};
+      Object.entries(toolConfig).forEach(([propertyKey, propertyConfig]) => {
+        properties[toolName][propertyKey] = propertyConfig.default;
+      });
+    });
+    return properties;
+  };
+
+  const [toolProperties, setToolProperties] = useState(() =>
+    initializeToolProperties()
+  );
+```
+
+Property changes update only the active tool's properties:
+
+```35:44:web-photoshop/src/App.jsx
+  // Handle property change for current tool
+  const handlePropertyChange = (propertyKey, value) => {
+    setToolProperties((prev) => ({
+      ...prev,
+      [activeTool]: {
+        ...prev[activeTool],
+        [propertyKey]: value,
+      },
+    }));
+  };
 ```
 
 ### Canvas.jsx
@@ -154,39 +179,125 @@ const Toolbar = ({ activeTool, onToolChange }) => {
 
 **Location**: `src/components/PropertiesPanel.jsx`
 
-**Purpose**: Displays tool properties and provides controls for tool settings.
+**Purpose**: Dynamically displays tool properties and provides controls for tool settings based on the active tool's property configuration.
 
 **Props**:
 - `activeTool` - Currently selected tool
-- `brushSize` - Current brush size
-- `onBrushSizeChange` - Brush size change handler
-- `opacity` - Current opacity
-- `onOpacityChange` - Opacity change handler
-- `brushColor` - Current color
-- `onColorChange` - Color change handler
+- `toolProperties` - Object containing current values for the active tool's properties
+- `onPropertyChange` - Handler for property changes (propertyKey, value)
 - `onClear` - Clear canvas handler
 - `onExport` - Export canvas handler
-- `onGenerateFractal` - Fractal generation handler (for fractal tool)
 
 **Features**:
-- Tool-specific controls (conditional rendering)
-- Brush size slider (1-100px)
-- Opacity slider (1-100%)
-- Color picker with hex display
-- Color swatches for quick selection
-- Action buttons (Clear, Export)
-- Fractal generation button (when fractal tool is active)
+- **Dynamic Property Rendering**: Automatically renders controls based on the active tool's property configuration from `toolPropertiesRegistry`
+- **Property Types Supported**:
+  - `slider` - Range input with min/max/unit display
+  - `color` - Color picker with hex display and optional color swatches
+- **Tool-Specific Controls**: Only shows properties defined by the active tool
+- **Action Buttons**: Clear Canvas and Export PNG (always visible)
 
 **Implementation**:
-```70:76:web-photoshop/src/components/PropertiesPanel.jsx
-      {activeTool === TOOLS.FRACTAL && (
+
+The PropertiesPanel uses the `toolPropertiesRegistry` to dynamically render properties:
+
+```1:32:web-photoshop/src/components/PropertiesPanel.jsx
+import { toolPropertiesRegistry } from '../tools'
+import ColorSwatches from './ColorSwatches'
+
+const PropertiesPanel = ({
+  activeTool,
+  toolProperties,
+  onPropertyChange,
+  onClear,
+  onExport
+}) => {
+  const toolConfig = toolPropertiesRegistry[activeTool]
+  
+  if (!toolConfig) {
+    return (
+      <div className="properties-panel">
         <div className="property-section">
-          <button className="action-button primary" onClick={onGenerateFractal}>
-            Generate Fractal
+          <span className="property-label">Tool</span>
+          <span className="property-value" style={{ textTransform: 'capitalize' }}>
+            {activeTool}
+          </span>
+        </div>
+        <div className="action-buttons">
+          <button className="action-button" onClick={onClear}>
+            Clear Canvas
+          </button>
+          <button className="action-button primary" onClick={onExport}>
+            Export PNG
           </button>
         </div>
-      )}
+      </div>
+    )
+  }
 ```
+
+Properties are rendered dynamically based on the tool's configuration:
+
+```34:86:web-photoshop/src/components/PropertiesPanel.jsx
+  const renderProperty = (propertyKey, propertyConfig) => {
+    const value = toolProperties[propertyKey]
+    const { type, label, min, max, unit, showSwatches } = propertyConfig
+
+    if (type === 'slider') {
+      return (
+        <div key={propertyKey} className="property-section">
+          <span className="property-label">
+            {label}: {value}{unit}
+          </span>
+          <input
+            type="range"
+            className="property-slider"
+            min={min}
+            max={max}
+            value={value}
+            onChange={(e) => onPropertyChange(propertyKey, parseInt(e.target.value))}
+          />
+        </div>
+      )
+    }
+
+    if (type === 'color') {
+      return (
+        <div key={propertyKey} className="property-section">
+          <span className="property-label">{label}</span>
+          <div className="color-picker-wrapper">
+            <div style={{ position: 'relative' }}>
+              <input
+                type="color"
+                className="color-input"
+                value={value}
+                onChange={(e) => onPropertyChange(propertyKey, e.target.value)}
+              />
+              <div
+                className="color-preview"
+                style={{ backgroundColor: value }}
+              />
+            </div>
+            <span className="property-value">{value.toUpperCase()}</span>
+          </div>
+          {showSwatches && (
+            <ColorSwatches
+              currentColor={value}
+              onColorChange={(color) => onPropertyChange(propertyKey, color)}
+            />
+          )}
+        </div>
+      )
+    }
+
+    return null
+  }
+```
+
+**Benefits of Dynamic Rendering**:
+- **Modular**: Each tool defines its own properties, no hardcoded UI
+- **Extensible**: Add new tools or properties without modifying PropertiesPanel
+- **Maintainable**: Property definitions live with tool implementations
+- **Type-Safe**: Property types are validated at render time
 
 ### ColorSwatches.jsx
 
@@ -299,12 +410,10 @@ App
 ├── Canvas (activeTool, onMouseDown, onMouseMove, onMouseUp)
 └── PropertiesPanel
     ├── activeTool
-    ├── brushSize, onBrushSizeChange
-    ├── opacity, onOpacityChange
-    ├── brushColor, onColorChange
+    ├── toolProperties (current tool's property values)
+    ├── onPropertyChange (propertyKey, value)
     ├── onClear
-    ├── onExport
-    └── onGenerateFractal
+    └── onExport
 ```
 
 ### State Management

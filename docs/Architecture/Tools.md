@@ -24,10 +24,11 @@ The following tools are currently implemented:
 src/tools/
 ├── constants.js          # Tool constants and canvas dimensions
 ├── utils.js              # Shared utility functions
-├── index.js              # Tool exports
-├── brushTool.js          # Brush implementation
-├── blurTool.js           # Blur implementation
-├── fillTool.js           # Fill implementation
+├── index.js              # Tool exports and properties registry
+├── brushTool.js          # Brush implementation + properties
+├── eraserTool.js         # Eraser properties configuration
+├── blurTool.js           # Blur implementation + properties
+├── fillTool.js           # Fill implementation + properties
 ├── fractalTool.js        # Fractal generation
 └── icons/                # Tool icon components
     ├── BrushIcon.jsx
@@ -56,10 +57,91 @@ export const TOOLS = {
 
 Each tool follows a consistent pattern:
 
-1. **Tool Function**: Exported function that modifies ImageData
-2. **Icon Component**: React component for the toolbar
-3. **Registration**: Added to Toolbar component
-4. **Handler**: Integrated into useDrawing hook (if mouse-based)
+1. **Tool Properties Configuration**: Exported object defining tool-specific properties
+2. **Tool Function**: Exported function that modifies ImageData
+3. **Icon Component**: React component for the toolbar
+4. **Registration**: Added to Toolbar component and toolPropertiesRegistry
+5. **Handler**: Integrated into useDrawing hook (if mouse-based)
+
+#### Tool Properties Configuration
+
+Each tool defines its own properties configuration that determines what controls appear in the PropertiesPanel. This makes tools completely modular and self-contained.
+
+**Property Configuration Format**:
+
+```javascript
+export const toolNameProperties = {
+  propertyKey: {
+    type: 'slider' | 'color',  // Property type
+    label: 'Display Label',    // UI label
+    default: defaultValue,      // Default value
+    // Type-specific options:
+    // For 'slider':
+    min: 1,                     // Minimum value
+    max: 100,                   // Maximum value
+    unit: 'px' | '%',          // Display unit
+    // For 'color':
+    showSwatches: true          // Show color swatches (optional)
+  }
+}
+```
+
+**Example - Brush Tool Properties**:
+
+```7:30:web-photoshop/src/tools/brushTool.js
+export const brushToolProperties = {
+  brushSize: {
+    type: 'slider',
+    label: 'Brush Size',
+    min: 1,
+    max: 100,
+    default: 20,
+    unit: 'px'
+  },
+  opacity: {
+    type: 'slider',
+    label: 'Opacity',
+    min: 1,
+    max: 100,
+    default: 100,
+    unit: '%'
+  },
+  brushColor: {
+    type: 'color',
+    label: 'Color',
+    default: '#000000',
+    showSwatches: true
+  }
+}
+```
+
+**Example - Blur Tool Properties** (simpler, only brush size):
+
+```6:15:web-photoshop/src/tools/blurTool.js
+export const blurToolProperties = {
+  brushSize: {
+    type: "slider",
+    label: "Brush Size",
+    min: 1,
+    max: 100,
+    default: 20,
+    unit: "px",
+  },
+};
+```
+
+**Example - Fill Tool Properties** (only color):
+
+```7:14:web-photoshop/src/tools/fillTool.js
+export const fillToolProperties = {
+  brushColor: {
+    type: 'color',
+    label: 'Color',
+    default: '#000000',
+    showSwatches: true
+  }
+}
+```
 
 #### Tool Function Signature
 
@@ -74,6 +156,22 @@ export const toolFunctionName = ({
   // Tool implementation - modify imageData directly
 };
 ```
+
+#### Tool Properties Registry
+
+All tool properties are registered in `src/tools/index.js` via the `toolPropertiesRegistry`:
+
+```28:34:web-photoshop/src/tools/index.js
+// Tool registry - maps tool names to their property configurations
+export const toolPropertiesRegistry = {
+  [TOOLS.BRUSH]: brushToolProperties,
+  [TOOLS.ERASER]: eraserToolProperties,
+  [TOOLS.BLUR]: blurToolProperties,
+  [TOOLS.FILL]: fillToolProperties
+}
+```
+
+The registry allows the PropertiesPanel to dynamically render the appropriate controls for each tool.
 
 ## Tool Implementations
 
@@ -96,7 +194,17 @@ export const toolFunctionName = ({
 
 ### Eraser Tool
 
-The eraser uses the same `drawBrushStroke` function with `isEraser: true`, which sets the color to white (255, 255, 255).
+**File**: `src/tools/eraserTool.js`
+
+**Properties**: `eraserToolProperties`
+
+**Properties Configuration**:
+- `brushSize` - Size of the eraser in pixels (1-100, default: 20)
+- `opacity` - Opacity percentage (1-100, default: 100)
+
+**Function**: Uses `drawBrushStroke` from `brushTool.js` with `isEraser: true`, which sets the color to white (255, 255, 255).
+
+**Note**: The eraser tool has its own properties configuration file but shares the brush tool's drawing function.
 
 ### Blur Tool
 
@@ -191,33 +299,50 @@ Tools are registered in `src/components/Toolbar.jsx`:
 
 Tools are exported from `src/tools/index.js`:
 
-```1:25:web-photoshop/src/tools/index.js
-// Constants
-export {
-  TOOLS,
-  COLOR_SWATCHES,
-  CANVAS_WIDTH,
-  CANVAS_HEIGHT,
-} from "./constants";
+```1:34:web-photoshop/src/tools/index.js
+// Constants - import TOOLS directly so we can use it in the registry
+import { TOOLS } from './constants'
+export { TOOLS, COLOR_SWATCHES, CANVAS_WIDTH, CANVAS_HEIGHT } from './constants'
 
 // Icons
-export {
-  BrushIcon,
-  EraserIcon,
-  BlurIcon,
-  FillIcon,
-  FractalIcon,
-} from "./icons";
+export { BrushIcon, EraserIcon, BlurIcon, FillIcon } from './icons'
 
 // Utils
-export { hexToRgb, getCursorClass } from "./utils";
+export { hexToRgb, getCursorClass } from './utils'
 
 // Tool functions
-export { drawBrushStroke } from "./brushTool";
-export { applyBlurEffect } from "./blurTool";
-export { floodFillArea } from "./fillTool";
-export { generateFractalBackground } from "./fractalTool";
+export { drawBrushStroke } from './brushTool'
+export { applyBlurEffect } from './blurTool'
+export { floodFillArea } from './fillTool'
+
+// Tool properties - import directly so we can use them in the registry
+import { brushToolProperties } from './brushTool'
+import { eraserToolProperties } from './eraserTool'
+import { blurToolProperties } from './blurTool'
+import { fillToolProperties } from './fillTool'
+
+// Re-export tool properties
+export { brushToolProperties } from './brushTool'
+export { eraserToolProperties } from './eraserTool'
+export { blurToolProperties } from './blurTool'
+export { fillToolProperties } from './fillTool'
+
+// Tool registry - maps tool names to their property configurations
+export const toolPropertiesRegistry = {
+  [TOOLS.BRUSH]: brushToolProperties,
+  [TOOLS.ERASER]: eraserToolProperties,
+  [TOOLS.BLUR]: blurToolProperties,
+  [TOOLS.FILL]: fillToolProperties
+}
 ```
+
+**Key Exports**:
+- **Constants**: `TOOLS`, `COLOR_SWATCHES`, `CANVAS_WIDTH`, `CANVAS_HEIGHT`
+- **Icons**: All tool icon components
+- **Utils**: Shared utility functions
+- **Tool Functions**: Drawing/effect functions for each tool
+- **Tool Properties**: Property configurations for each tool
+- **Tool Properties Registry**: Central registry mapping tools to their property configurations
 
 ## Tool Execution Flow
 
@@ -248,6 +373,7 @@ To add a new tool, follow these steps:
 
 2. **Create Tool Implementation**
    - Create `src/tools/{toolName}Tool.js`
+   - **Define tool properties configuration** (export `{toolName}ToolProperties`)
    - Export function that modifies ImageData
    - Follow tool function signature pattern
 
@@ -257,7 +383,9 @@ To add a new tool, follow these steps:
 
 4. **Export Tool**
    - Add tool function export to `src/tools/index.js`
+   - Add tool properties import and export to `src/tools/index.js`
    - Add icon export to `src/tools/index.js`
+   - **Register tool in `toolPropertiesRegistry`** in `src/tools/index.js`
 
 5. **Register in Toolbar**
    - Add tool entry to tools array in `src/components/Toolbar.jsx`
@@ -265,12 +393,12 @@ To add a new tool, follow these steps:
 6. **Add Handler (if mouse-based)**
    - Add tool handler in `src/hooks/useDrawing.js`
    - Route mouse events to tool function
+   - Pass `toolProperties` object to tool function
 
 7. **Add Cursor Class (optional)**
    - Add cursor mapping in `src/tools/utils.js` `getCursorClass` function
 
-8. **Add UI Controls (if needed)**
-   - Add tool-specific controls to `src/components/PropertiesPanel.jsx`
+**Note**: The PropertiesPanel will automatically render the appropriate controls based on your tool's properties configuration. No manual UI code is needed!
 
 ## Tool Dependencies
 
