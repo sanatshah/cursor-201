@@ -1,21 +1,24 @@
-import { toolPropertiesRegistry } from '../tools'
-import ColorSwatches from './ColorSwatches'
+import { toolPropertiesRegistry } from "../tools";
+import ColorSwatches from "./ColorSwatches";
 
 const PropertiesPanel = ({
   activeTool,
   toolProperties,
   onPropertyChange,
   onClear,
-  onExport
+  onExport,
 }) => {
-  const toolConfig = toolPropertiesRegistry[activeTool]
-  
+  const toolConfig = toolPropertiesRegistry[activeTool];
+
   if (!toolConfig) {
     return (
       <div className="properties-panel">
         <div className="property-section">
           <span className="property-label">Tool</span>
-          <span className="property-value" style={{ textTransform: 'capitalize' }}>
+          <span
+            className="property-value"
+            style={{ textTransform: "capitalize" }}
+          >
             {activeTool}
           </span>
         </div>
@@ -28,18 +31,19 @@ const PropertiesPanel = ({
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   const renderProperty = (propertyKey, propertyConfig) => {
-    const value = toolProperties[propertyKey]
-    const { type, label, min, max, unit, showSwatches } = propertyConfig
+    const value = toolProperties[propertyKey];
+    const { type, label, min, max, unit, showSwatches } = propertyConfig;
 
-    if (type === 'slider') {
+    if (type === "slider") {
       return (
         <div key={propertyKey} className="property-section">
           <span className="property-label">
-            {label}: {value}{unit}
+            {label}: {value}
+            {unit}
           </span>
           <input
             type="range"
@@ -47,31 +51,18 @@ const PropertiesPanel = ({
             min={min}
             max={max}
             value={value}
-            onChange={(e) => onPropertyChange(propertyKey, parseInt(e.target.value))}
+            onChange={(e) =>
+              onPropertyChange(propertyKey, parseInt(e.target.value))
+            }
           />
         </div>
-      )
+      );
     }
 
-    if (type === 'color') {
+    if (type === "color") {
       return (
         <div key={propertyKey} className="property-section">
           <span className="property-label">{label}</span>
-          <div className="color-picker-wrapper">
-            <div style={{ position: 'relative' }}>
-              <input
-                type="color"
-                className="color-input"
-                value={value}
-                onChange={(e) => onPropertyChange(propertyKey, e.target.value)}
-              />
-              <div
-                className="color-preview"
-                style={{ backgroundColor: value }}
-              />
-            </div>
-            <span className="property-value">{value.toUpperCase()}</span>
-          </div>
           {showSwatches && (
             <ColorSwatches
               currentColor={value}
@@ -79,17 +70,20 @@ const PropertiesPanel = ({
             />
           )}
         </div>
-      )
+      );
     }
 
-    return null
-  }
+    return null;
+  };
 
   return (
     <div className="properties-panel">
       <div className="property-section">
         <span className="property-label">Tool</span>
-        <span className="property-value" style={{ textTransform: 'capitalize' }}>
+        <span
+          className="property-value"
+          style={{ textTransform: "capitalize" }}
+        >
           {activeTool}
         </span>
       </div>
@@ -107,7 +101,7 @@ const PropertiesPanel = ({
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PropertiesPanel
+export default PropertiesPanel;
